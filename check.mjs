@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { render } from './render.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const src = fs.readFileSync(path.join(here, 'standards.html'), 'utf8');
 const problems = [];
@@ -22,6 +23,10 @@ else {
     if (!r.check) problems.push(`${r.id}: no check`);
   }
   for (const s of [...D.start, ...D.dod]) if (!by.has(s.ref)) problems.push(`bookend refers to missing rule ${s.ref}`);
+}
+if (!problems.length) {
+  const md = path.join(here, 'standards.md');
+  if (!fs.existsSync(md) || fs.readFileSync(md, 'utf8') !== render(src)) problems.push('standards.md is stale: run node render.mjs');
 }
 const copies = JSON.parse(fs.readFileSync(path.join(here, 'copies.json'), 'utf8'));
 const host = os.hostname();
