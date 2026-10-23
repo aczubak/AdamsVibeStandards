@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How we build things</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#1b2430;--dim:#5b6675;--line:#dde2e8;--accent:#1f6feb;
+ --m:#1a7f37;--mbg:#e6f4ea;--j:#9a6700;--jbg:#fff4d6;--p:#6f42c1;--pbg:#efe8fa;--bad:#cf222e;--badbg:#fde8e9;--code:#eef1f5}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#0f1720;--panel:#16202c;--ink:#e3e8ee;--dim:#93a1b2;--line:#263444;--accent:#58a6ff;
+ --m:#56d364;--mbg:#12301c;--j:#e3b341;--jbg:#33280d;--p:#c297ff;--pbg:#2a1f3d;--bad:#ff7b72;--badbg:#3a1a1c;--code:#1d2a38}}
+:root[data-theme="dark"]{
+ --bg:#0f1720;--panel:#16202c;--ink:#e3e8ee;--dim:#93a1b2;--line:#263444;--accent:#58a6ff;
+ --m:#56d364;--mbg:#12301c;--j:#e3b341;--jbg:#33280d;--p:#c297ff;--pbg:#2a1f3d;--bad:#ff7b72;--badbg:#3a1a1c;--code:#1d2a38}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1480px;margin:0 auto;padding:24px 16px 80px}
+h1{font-size:24px;margin:0 0 4px}
+h2{font-size:17px;margin:34px 0 10px;padding-top:12px;border-top:1px solid var(--line)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--dim);font-size:13px}
+.k{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);margin-right:4px}
+.strip{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.strip div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:110px}
+.strip b{display:block;font-size:20px}
+.prin{display:grid;gap:8px}
+.prin div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;display:grid;grid-template-columns:28px 1fr;gap:4px 10px}
+.prin .n{font-weight:700;color:var(--accent)}
+.prin .hook{grid-column:2;color:var(--dim);font-size:13px}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.filters button{font:inherit;font-size:13px;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.grid{display:grid;grid-template-columns:150px repeat(6,1fr);gap:6px}
+.head{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);padding:4px 6px;align-self:end}
+.pcell{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.pcell b{display:block}.pcell span{color:var(--dim);font-size:12.5px}
+.cell{display:grid;gap:6px;align-content:start}
+.cell .lane{display:none}
+.rule{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13.5px}
+.rule .id{font-size:11px;color:var(--dim);font-family:ui-monospace,Consolas,monospace}
+.rule .t{margin:2px 0 6px}
+.rule .c{font-size:12.5px;color:var(--dim)}
+.cls{display:inline-block;font-weight:700;font-size:11.5px;padding:0 6px;border-radius:9px;border:1px solid}
+.cls.M{color:var(--m);background:var(--mbg);border-color:var(--m)}
+.cls.J{color:var(--j);background:var(--jbg);border-color:var(--j)}
+.cls.P{color:var(--p);background:var(--pbg);border-color:var(--p)}
+.none{color:var(--dim);font-size:12px;padding:8px 10px;border:1px dashed var(--line);border-radius:8px}
+.hidden{display:none}
+.hook{color:var(--dim)}
+ol.book{padding-left:22px;margin:6px 0}ol.book li{margin:5px 0}
+ol.book .id{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--dim);margin-left:6px}
+.leave{display:grid;gap:6px}.leave div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.checks{font-size:13px}.checks .ok{color:var(--m)}.checks .bad{color:var(--bad);background:var(--badbg);padding:2px 6px;border-radius:4px}
+code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:var(--code);padding:1px 4px;border-radius:3px}
+@media (max-width:1100px){
+ .grid{grid-template-columns:1fr}.head{display:none}.pcell{margin-top:14px}
+ .cell .lane{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim)}
+}
+</style>
+</head>
+<body><main>
+
+<h1>How we build things</h1>
+<div class="meta" id="meta"></div>
+<p style="margin:10px 0 0;color:var(--dim)">Where a rule and the named idea it belongs to disagree, the rule wins. Names are hooks, not sources; nothing is looked up. Examples stay generic; a project puts its own beside the rule id in its own file. Rule ids are stable and never reused. A rule's class is fixed here; whether a project has built its lint is that project's state.</p>
+<div class="strip" id="strip"></div>
+
+<h2>Principles</h2>
+<div class="prin" id="prin"></div>
+
+<h2>Rules, by principle and lane</h2>
+<div class="filters" id="filters"><span class="k" style="align-self:center">Class</span></div>
+<div class="grid" id="grid"></div>
+
+<h2>Starting something</h2>
+<ol class="book" id="start"></ol>
+
+<h2>Definition of Done</h2>
+<ol class="book" id="dod"></ol>
+
+<h2>Where we leave the named idea</h2>
+<div class="leave" id="leave"></div>
+
+<h2>Checks on this page</h2>
+<div class="checks" id="checks"></div>
+
+<script id="data" type="application/json">
+{
+ "draft":5,
+ "date":"2026-10-23",
+ "fork": {"from":"the work copy, draft 4","date":"2026-10-23"},
+ "classes": {"M":"mechanical: a lint in the gate decides it","J":"judgement: a named review pass","P":"proxy: a lint catches part of it; the pass is still owed"},
+ "lanes": [
+  {"id":"W","name":"Words"},{"id":"D","name":"Data model"},{"id":"C","name":"Code"},
+  {"id":"S","name":"Screens"},{"id":"P","name":"Pages and decks"},{"id":"X","name":"Process"}
+ ],
+ "principles": [
+  {"id":1,"name":"One word, one meaning, one owner","line":"The vocabulary is a library; text names words by key; a retired word fails.","hook":"ubiquitous language"},
+  {"id":2,"name":"Everything is a record of a declared kind","line":"Kind name, definition, one line; stable ids; typed links. A page renders records and holds no content.","hook":"domain model"},
+  {"id":3,"name":"One fact, one owner","line":"Everything else links or is generated. A copy exists only where a check fails when it drifts.","hook":"DRY"},
+  {"id":4,"name":"Say what you have, not what exists","line":"Unknown is a value; counts are computed; nothing stands in for a missing fact.","hook":"fail fast"},
+  {"id":5,"name":"Labelled values, not prose","line":"The reader learns every word on the page, never in a conversation they were not in.","hook":"plain language"},
+  {"id":6,"name":"Rules hold when a machine refuses, not when an agent remembers","line":"A rule with no lint and no named pass is decoration.","hook":"poka-yoke"},
+  {"id":7,"name":"Build first; settle words and kinds before production","line":"Code is cheap to rebuild; production data and the owner's attention are not.","hook":""},
+  {"id":8,"name":"Access is granted, never assumed","line":"Only a person grants it; a caller gets the least it needs; a secret is made where it is used and never written down.","hook":"least privilege"}
+ ],
+ "rules": [
+  {"id":"1W","p":1,"lane":"W","cls":"M","text":"One glossary per product; one entry per concept: screen word, definition, the one name in code, routes, files and label keys, retired words. A new word enters the glossary first, after finding where it is already settled; disagreeing sources are raised, not picked.","check":"retired word in any layer fails"},
+  {"id":"1W2","p":1,"lane":"W","cls":"P","text":"No synonyms, no homonyms: two words for one thing, or one word for two, is split or merged, then swept. No personal names in prose, code, docs or file names; a record whose kind is a person holds the name as data.","check":"term count; denylist; read"},
+  {"id":"1D","p":1,"lane":"D","cls":"P","text":"Look before you declare: search the model, glossary and shared core before adding a kind or field; record what was found; a new kind states what it could not have been. Shared concepts live in core; a field of one external system lives on its connector.","check":"create refuses without the recorded search","hook":"bounded context · YAGNI"},
+  {"id":"1S","p":1,"lane":"S","cls":"M","text":"Every heading and label is a declared name; one name per thing and per role.","check":"undeclared label fails"},
+  {"id":"1P","p":1,"lane":"P","cls":"P","text":"Define before use: one entry per term, every use links to it. Internal vocabulary never reaches the reader: no ticket, decision or use-case ids, no code names, no design words in a story or definition. A sentence about something prevented or decided names who.","check":"anchors lint; word list; cold read"},
+
+  {"id":"2D","p":2,"lane":"D","cls":"M","text":"Every kind is declared: kind name, instance name, one line, rendered from data; a kind is itself a record. Ids are stable, never reused; a retired record keeps its id and says where it went.","check":"data check"},
+  {"id":"2D2","p":2,"lane":"D","cls":"P","text":"A one-to-one fact is a field; every other relationship is one typed link, written once, reverse computed. One owner per mechanism; others state only what they add and link to it.","check":"link types declared; owner's word without link flagged"},
+  {"id":"2D3","p":2,"lane":"D","cls":"M","text":"Declared lists for every choice; a new value is proposed and added, never typed in. One declared value means one thing; a behaviour is a declared property, never inferred from a zone, name, prefix or flag. A declaration says what a field is, never where it sits.","check":"value outside its list fails; purity check refuses kind or zone comparisons outside the registry"},
+  {"id":"2D4","p":2,"lane":"D","cls":"P","text":"A new entry is data; a new capability is code. Could someone want one more? Then it is addable while running, never by a release or a migration.","check":"a migration insert into a non-lookup table must be listed with its reason"},
+  {"id":"2D5","p":2,"lane":"D","cls":"M","text":"Every write is an act stored with who, when and which act. A fact about the moment is recorded; a derivation from current facts is computed, never stored. The way back is a counter-act in the history, never undo.","check":"data check: no stored derivation; every act carries who and when"},
+  {"id":"2D6","p":2,"lane":"D","cls":"M","text":"Data changes only through the one write path that runs the rules and keeps the history: no raw write, no side door. A repair goes through the same path.","check":"write-lane check refuses a write outside the path"},
+  {"id":"2C","p":2,"lane":"C","cls":"M","text":"Code holds no vocabulary: no literal list, status code, label copy or production id.","check":"purity check"},
+  {"id":"2S","p":2,"lane":"S","cls":"P","text":"Screens render the registry: the shared grid and declared views, one component per kind rendered the same everywhere, one picker, one maker per act. Distinct facts get distinct surfaces: two true sentences about a value means two labels.","check":"hand-written table check; review"},
+  {"id":"2S2","p":2,"lane":"S","cls":"M","text":"Every record reference on screen is a link to its one viewer; one record viewer per screen; a kind name opens the kind definition; every record has a stable deep link.","check":"browser check: a reference that is not a link fails; every deep link resolves"},
+  {"id":"2P","p":2,"lane":"P","cls":"P","text":"A document with data reads a data island; tables, counts and timelines are rendered, not typed. A deck reads the data.","check":"deck copy --check; review"},
+
+  {"id":"3D","p":3,"lane":"D","cls":"M","text":"One data file or store is the source; everything else reads it. Generated artefacts are generated, never edited.","check":"malformed data refused; a copy fails --check on drift"},
+  {"id":"3D2","p":3,"lane":"D","cls":"P","text":"A record carries no attribute another system owns; live state from elsewhere is read when needed, never copied onto the record.","check":"declaration review; a copied field with no owner here fails"},
+  {"id":"3C","p":3,"lane":"C","cls":"P","text":"No convenience duplicates: no shortcut endpoint, wrapper, hook or parallel path.","check":"dead-code and cycle scans; review"},
+  {"id":"3C2","p":3,"lane":"C","cls":"M","text":"The API is declared once as a contract; the docs page, client types, validation and route table are generated from it. A hand-written API doc is a copy.","check":"a route outside the contract fails; docs are a generated artefact","hook":"OpenAPI"},
+  {"id":"3P","p":3,"lane":"P","cls":"J","text":"One fact, one owning doc; elsewhere links. No live state written into a doc: query and cite. A future-work list in a doc is a defect; work is a ticket. New docs need approval; superseded docs move to old/.","check":"review; could the system regenerate this?"},
+  {"id":"3X","p":3,"lane":"X","cls":"P","text":"Replace by expand, migrate, contract: add the new shape, move every reader and behaviour (scripts, playbooks, allowlists, notes), then remove. Done when the sweep for the old name is empty.","check":"retire refuses while readers remain","hook":"parallel change"},
+  {"id":"3X2","p":3,"lane":"X","cls":"M","text":"A project rule cites the standard rule it applies by id and adds only the project specifics; a restatement without a citation fails.","check":"citation check over the project rules"},
+
+  {"id":"4D","p":4,"lane":"D","cls":"M","text":"Unknown is a value in every list and shows as one; a floor is called a floor.","check":"unknown in every list"},
+  {"id":"4C","p":4,"lane":"C","cls":"J","text":"No guess as a fallback: no silent default, catch-and-continue or special case. Missing capability: build it or stop and ask. A stopgap warns every time it fires and has a ticket before it merges. Declared defaults and fail-loud checks are fine.","check":"RCA: which fact is missing, who owns it"},
+  {"id":"4S","p":4,"lane":"S","cls":"P","text":"An absent value is visibly empty: no dash, zero or placeholder. Nothing silently: a removal states its report first, a skip writes a line, the way back is a named act, never undo. A greyed button says what it waits for.","check":"waits line lintable; review"},
+  {"id":"4P","p":4,"lane":"P","cls":"J","text":"Every claim verified against the source or marked reasoned; an aspiration is labelled as one on the page. Evidence quotes what was said or seen and names its source; said is not verified, mark which.","check":"content pass"},
+  {"id":"4X","p":4,"lane":"X","cls":"J","text":"A refusal without an address is a missing feature.","check":"review"},
+  {"id":"4X2","p":4,"lane":"X","cls":"J","text":"Probing production to see a guard fire is a write unless the call is refused; probe a disposable copy.","check":"review: what happens if the guard does not fire"},
+
+  {"id":"5C","p":5,"lane":"C","cls":"P","text":"Comments state behaviour or why, never history; no dates or ids in code.","check":"comments lint"},
+  {"id":"5S","p":5,"lane":"S","cls":"M","text":"Every value is labelled: kind, name, one line where wanted. An id is a data point, small and grey beside the name, never alone, never link text. A chip is never alone; its group carries a kind label.","check":"browser check"},
+  {"id":"5S2","p":5,"lane":"S","cls":"P","text":"Labels and states, never sentences: at most eight words per span, no sentence punctuation, never you, no advising hint. A message that teaches (a refusal, help, what an act waits for) is full sentences and says what to do instead. Colour belongs to a kind or column, never a verdict on data.","check":"prose lint; review"},
+  {"id":"5S3","p":5,"lane":"S","cls":"P","text":"A panel informs, a window acts: declare, show the consequence, confirm. One definition per screen, where the thing first appears; a panel does not repeat its header; reading order.","check":"definition twice on a view fails; review"},
+  {"id":"5P","p":5,"lane":"P","cls":"P","text":"Say what it is and stop: no selling or gotcha turns, no pre-justifying. A definition is one sentence with a verb about what happens, at most twenty words, then an example with concrete values, then why it matters. One idea per sentence, at most 25 words; bullets one sentence, paragraphs two. Titles say what the thing shows, sentence case, no twist.","check":"word list; guide lint; review"},
+  {"id":"5P2","p":5,"lane":"P","cls":"J","text":"The reader has only the page: every word learned here or earlier and restated; a pointer never replaces the thing. Numbers over state words; a number means one thing per page. A fresh-reader audit after any vocabulary or large change, recorded with its count, passes when the report is empty.","check":"cold read"},
+  {"id":"5P3","p":5,"lane":"P","cls":"M","text":"A document for a person is one self-contained HTML file: tokens, light and dark, no network. Every screen and page works at desktop and phone width with no sideways scroll.","check":"browser check"},
+
+  {"id":"6X","p":6,"lane":"X","cls":"M","text":"Every M rule is a lint in the gate; linter, formatter and type check are in every gate; the gate doc lists what it checks and what it does not. A script nothing calls is not a check.","check":"rules declared against lints invoked"},
+  {"id":"6X2","p":6,"lane":"X","cls":"M","text":"A check is proven red before it is trusted green; its fixtures fail and pass.","check":"lint self-test"},
+  {"id":"6X3","p":6,"lane":"X","cls":"J","text":"A J rule never becomes M by lengthening a word list; sharpen the rule or shrink its scope.","check":"none"},
+  {"id":"6X4","p":6,"lane":"X","cls":"J","text":"Fix the class, not the case: name the class, search for siblings, fix or ticket each in the same turn. A fix holds only in its lane: name the other lanes and check each, or say which were left.","check":"the reply names the class, the search and the lanes"},
+  {"id":"6X5","p":6,"lane":"X","cls":"M","text":"A change to the data model is rehearsed on a restore of real data before it reaches production.","check":"restore rehearsal in the gate"},
+  {"id":"6X6","p":6,"lane":"X","cls":"M","text":"A new lint on an existing codebase records the count it finds today as its baseline, refuses anything new, and lets the count only go down.","check":"baseline file; the lint fails on a rise"},
+
+  {"id":"7P","p":7,"lane":"P","cls":"J","text":"Persistent docs are the now and the decisions in force; detail is one spec linked from its ticket. The decision log is append-only; a decision is superseded, never rewritten.","check":"review","hook":"ADR"},
+  {"id":"7X","p":7,"lane":"X","cls":"J","text":"Build on a copy. Before production: words and kinds settled, and the owner has read the concept page (which kinds exist, what each is called, what each replaces) and used the working thing. The owner never reviews a design document.","check":"the go request carries the concept page"},
+  {"id":"7X2","p":7,"lane":"X","cls":"J","text":"Independent review before go: a reader or agent that did not build it checks against the Definition of Done and the cold read; the owner gets the concept page and the result.","check":"report attached to go"},
+  {"id":"7X3","p":7,"lane":"X","cls":"P","text":"Proposals, then review: proposed until the owner accepts. Mint before you cite. Date from the system clock. Snapshot before a structural edit; re-read a synced file before building on it; stage commits by path.","check":"status is a declared list; review"},
+  {"id":"7X4","p":7,"lane":"X","cls":"M","text":"A copy of production declares itself a copy on every screen and withholds every send, poll and outward call, showing what it would have sent.","check":"the copy refuses to start without the setting"},
+
+  {"id":"8D","p":8,"lane":"D","cls":"P","text":"Only a person grants access; a grant is an act with who and when; a caller gets the least it needs; access is never wider than the source system allows without the data owner saying so.","check":"grants are records; review"},
+  {"id":"8C","p":8,"lane":"C","cls":"M","text":"A secret is made where it is used, shown once if at all, and never printed, logged or committed.","check":"secret scan in the gate"},
+  {"id":"8X","p":8,"lane":"X","cls":"J","text":"A machine gets its own key for one repository or system, never a copy of a person’s key.","check":"review"}
+ ],
+ "start": [
+  {"step":"Reader and job, in two lines","ref":"5P2"},
+  {"step":"Settle the words","ref":"1W"},
+  {"step":"Find each concept, declare the kinds as data","ref":"1D"},
+  {"step":"Ids, fields, typed links, lists, unknown","ref":"2D"},
+  {"step":"Name the owner of every fact","ref":"3D"},
+  {"step":"Wire the checks before content","ref":"6X"},
+  {"step":"Build on a copy, render from records","ref":"7X"},
+  {"step":"Record what it does not know, on the thing","ref":"4D"}
+ ],
+ "dod": [
+  {"step":"Words declared, none retired","ref":"1W"},
+  {"step":"No hardcoded list, id, status or vocabulary copy","ref":"2C"},
+  {"step":"Anything wanted one-more-of is addable without a release","ref":"2D4"},
+  {"step":"Every value labelled, no prose, no names","ref":"5S"},
+  {"step":"Carried through every lane","ref":"6X4"},
+  {"step":"Nothing removed until readers and behaviour moved; sweep empty","ref":"3X"},
+  {"step":"Every new check seen red","ref":"6X2"},
+  {"step":"Gate, linter, formatter, types pass","ref":"6X"},
+  {"step":"A data-model change rehearsed on real data","ref":"6X5"},
+  {"step":"No secret printed, logged or committed","ref":"8C"},
+  {"step":"Comments say why","ref":"5C"},
+  {"step":"A correction's class swept","ref":"6X4"},
+  {"step":"Independent review ran; owner has the concept page","ref":"7X2"}
+ ],
+ "leave": [
+  {"idea":"DRY","ours":"a copy is allowed where a check fails on drift; no abstraction for its own sake"},
+  {"idea":"DDD","ours":"entity means what the platform definition says, not DDD's sense"},
+  {"idea":"Nielsen","ours":"no prose on screens at all; no dash or zero for an absent value"},
+  {"idea":"Design review before build","ours":"replaced by build-first on a copy plus the concept page"}
+ ]
+}
+</script>
+<script>
+(function(){
+ const D=JSON.parse(document.getElementById('data').textContent);
+ const $=(id)=>document.getElementById(id);
+ const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!==undefined)e.innerHTML=h;return e};
+ const esc=(s)=>String(s).replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+ const byId=Object.fromEntries(D.rules.map(r=>[r.id,r]));
+ const problems=[];
+ /* checks */
+ const seen=new Set();D.rules.forEach(r=>{if(seen.has(r.id))problems.push('duplicate id '+r.id);seen.add(r.id);
+  if(!D.principles.some(p=>p.id===r.p))problems.push(r.id+': unknown principle '+r.p);
+  if(!D.lanes.some(l=>l.id===r.lane))problems.push(r.id+': unknown lane '+r.lane);
+  if(!D.classes[r.cls])problems.push(r.id+': unknown class '+r.cls);
+  if(!r.check)problems.push(r.id+': no check')});
+ [...D.start,...D.dod].forEach(s=>{if(!byId[s.ref])problems.push('bookend refers to missing rule '+s.ref)});
+ $("meta").innerHTML=`<span><span class="k">Draft</span>${D.draft}</span><span><span class="k">Date</span>${D.date}</span><span><span class="k">Applies to</span>app · data file · page · deck · doc · one-page note</span>`;
+ /* strip */
+ const n=(c)=>D.rules.filter(r=>r.cls===c).length;
+ const empty=D.principles.length*D.lanes.length-new Set(D.rules.map(r=>r.p+r.lane)).size;
+ [['Principles',D.principles.length],['Lanes',D.lanes.length],['Rules',D.rules.length],['Mechanical',n('M')],['Judgement',n('J')],['Proxy',n('P')],['Cells without a rule',empty]]
+  .forEach(([k,v])=>$('strip').appendChild(el('div','',`<span class="k">${k}</span><b>${v}</b>`)));
+ /* principles */
+ D.principles.forEach(p=>$('prin').appendChild(el('div','',`<span class="n">${p.id}</span><div><b>${esc(p.name)}.</b> ${esc(p.line)}</div>`+(p.hook?`<div class="hook"><span class="k">Named idea</span>${esc(p.hook)}</div>`:''))));
+ /* grid */
+ const g=$('grid');g.appendChild(el('div','head','Principle'));D.lanes.forEach(l=>g.appendChild(el('div','head',esc(l.name))));
+ D.principles.forEach(p=>{g.appendChild(el('div','pcell',`<b>${p.id}. ${esc(p.name)}</b><span>${esc(p.line)}</span>`));
+  D.lanes.forEach(l=>{const c=el('div','cell');c.appendChild(el('div','lane',esc(l.name)));
+   const rs=D.rules.filter(r=>r.p===p.id&&r.lane===l.id);
+   if(!rs.length)c.appendChild(el('div','none','no rule'));
+   rs.forEach(r=>{const e=el('div','rule');e.dataset.cls=r.cls;
+    e.innerHTML=`<div class="id">${r.id}</div><div class="t">${esc(r.text)}</div><div class="c"><span class="k">Class</span><span class="cls ${r.cls}" title="${esc(D.classes[r.cls])}">${r.cls}</span> &nbsp; <span class="k">Check</span>${esc(r.check)}`+(r.hook?` &nbsp; <span class="k">Named idea</span>${esc(r.hook)}`:'')+`</div>`;
+    c.appendChild(e)});
+   g.appendChild(c)})});
+ /* filters */
+ const f=$('filters');const set=(v)=>{f.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v));
+  g.querySelectorAll('.rule').forEach(e=>e.classList.toggle('hidden',v!=='all'&&e.dataset.cls!==v))};
+ [['all','All'],['M','M · mechanical'],['J','J · judgement'],['P','P · proxy']].forEach(([v,t])=>{const b=el('button','',t);b.dataset.v=v;b.onclick=()=>set(v);f.appendChild(b)});set('all');
+ /* bookends */
+ const book=(id,list)=>list.forEach(s=>{const r=byId[s.ref];$(id).appendChild(el('li','',`${esc(s.step)}<span class="id">${s.ref}</span>`+(r?` <span class="cls ${r.cls}">${r.cls}</span>`:'')))});
+ book('start',D.start);book('dod',D.dod);
+ /* leave */
+ D.leave.forEach(x=>$('leave').appendChild(el('div','',`<b>${esc(x.idea)}</b> · ${esc(x.ours)}`)));
+ /* checks */
+ const ch=$('checks');
+ ch.appendChild(el('div','',`<span class="k">Ids unique, every rule has a principle, a lane, a class and a check, every bookend resolves</span> `+(problems.length?problems.map(p=>`<span class="bad">${esc(p)}</span>`).join(' '):'<span class="ok">pass</span>')));
+ ch.appendChild(el('div','',`<span class="k">Not checked here</span> whether a rule is true, whether two cells say the same thing, whether a project built a lint`));
+})();
+</script>
+</main></body></html>
