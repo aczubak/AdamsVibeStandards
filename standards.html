@@ -86,8 +86,8 @@ code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:var
 
 <script id="data" type="application/json">
 {
- "draft":5,
- "date":"2026-10-23",
+ "draft":6,
+ "date":"2026-10-28",
  "fork": {"from":"the work copy, draft 4","date":"2026-10-23"},
  "classes": {"M":"mechanical: a lint in the gate decides it","J":"judgement: a named review pass","P":"proxy: a lint catches part of it; the pass is still owed"},
  "lanes": [
@@ -139,9 +139,9 @@ code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:var
 
   {"id":"5C","p":5,"lane":"C","cls":"P","text":"Comments state behaviour or why, never history; no dates or ids in code.","check":"comments lint"},
   {"id":"5S","p":5,"lane":"S","cls":"M","text":"Every value is labelled: kind, name, one line where wanted. An id is a data point, small and grey beside the name, never alone, never link text. A chip is never alone; its group carries a kind label.","check":"browser check"},
-  {"id":"5S2","p":5,"lane":"S","cls":"P","text":"Labels and states, never sentences: at most eight words per span, no sentence punctuation, never you, no advising hint. A message that teaches (a refusal, help, what an act waits for) is full sentences and says what to do instead. Colour belongs to a kind or column, never a verdict on data.","check":"prose lint; review"},
+  {"id":"5S2","p":5,"lane":"S","cls":"P","text":"Each line on a screen is a label (a noun phrase), a labelled value (a field name and a noun phrase), or, where the screen teaches (a refusal, help, what an act waits for), independent clauses that say what to do instead. Never a telegraphic line (headlinese: a fragment joining phrases), an elliptical comparison, a trailing appositive, a pronoun, second person or an advising hint. Items in a list are parallel. Colour belongs to a kind or column, never a verdict on data.","check":"writer's pass names the structure; pronoun and you lint"},
   {"id":"5S3","p":5,"lane":"S","cls":"P","text":"A panel informs, a window acts: declare, show the consequence, confirm. One definition per screen, where the thing first appears; a panel does not repeat its header; reading order.","check":"definition twice on a view fails; review"},
-  {"id":"5P","p":5,"lane":"P","cls":"P","text":"Say what it is and stop: no selling or gotcha turns, no pre-justifying. A definition is one sentence with a verb about what happens, at most twenty words, then an example with concrete values, then why it matters. One idea per sentence, at most 25 words; bullets one sentence, paragraphs two. Titles say what the thing shows, sentence case, no twist.","check":"word list; guide lint; review"},
+  {"id":"5P","p":5,"lane":"P","cls":"P","text":"Say what it is and stop: no antithesis, selling or pre-justifying, no universal quantifier a count does not back. Each line is a label, a labelled value or a sentence (5S2): a box holds a noun phrase, a comparison is a labelled value. A sentence is one independent clause in the active voice with the agent named: no agentless passive, nominalisation where a verb works, noun stack, comma splice or pronoun. A definition is one sentence about what happens, then an example with concrete values, then why it matters. Bullets one sentence, paragraphs two. Titles say what the thing shows, sentence case, no twist.","check":"writer's pass names the structure; word list; cold read"},
   {"id":"5P2","p":5,"lane":"P","cls":"J","text":"The reader has only the page: every word learned here or earlier and restated; a pointer never replaces the thing. Numbers over state words; a number means one thing per page. A fresh-reader audit after any vocabulary or large change, recorded with its count, passes when the report is empty.","check":"cold read"},
   {"id":"5P3","p":5,"lane":"P","cls":"M","text":"A document for a person is one self-contained HTML file: tokens, light and dark, no network. Every screen and page works at desktop and phone width with no sideways scroll.","check":"browser check"},
 
