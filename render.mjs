@@ -12,13 +12,14 @@ export function render(src) {
   const out = [];
   out.push(`# The working standard (draft ${D.draft}, ${D.date})`, '');
   out.push('Generated from standards.html by render.mjs; never edit this file. Rules are cited by id. A project adds only');
-  out.push('its own specifics beside an id and never restates a rule (3X2).', '');
+  out.push('its own specifics beside an id and never restates a rule (3X2). A bracketed name after a principle or rule is');
+  out.push('the named idea it builds on; where the rule and the named idea disagree, the rule wins.', '');
   out.push('Classes: ' + Object.entries(D.classes).map(([k, v]) => `${k} = ${v}`).join('; ') + '.', '');
   const lane = Object.fromEntries(D.lanes.map((l) => [l.id, l.name]));
   for (const p of D.principles) {
-    out.push(`## ${p.id}. ${p.name}`, '', p.line, '');
+    out.push(`## ${p.id}. ${p.name}${p.hook ? ` (${p.hook})` : ''}`, '', p.line, '');
     for (const r of D.rules.filter((x) => x.p === p.id)) {
-      out.push(`- **${r.id}** (${lane[r.lane]}, ${r.cls}): ${r.text} *Check: ${r.check}.*`);
+      out.push(`- **${r.id}** (${lane[r.lane]}, ${r.cls}): ${r.text}${r.hook ? ` *(${r.hook})*` : ''} *Check: ${r.check}.*`);
     }
     out.push('');
   }

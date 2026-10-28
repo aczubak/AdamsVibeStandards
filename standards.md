@@ -1,21 +1,22 @@
 # The working standard (draft 6, 2026-10-28)
 
 Generated from standards.html by render.mjs; never edit this file. Rules are cited by id. A project adds only
-its own specifics beside an id and never restates a rule (3X2).
+its own specifics beside an id and never restates a rule (3X2). A bracketed name after a principle or rule is
+the named idea it builds on; where the rule and the named idea disagree, the rule wins.
 
 Classes: M = mechanical: a lint in the gate decides it; J = judgement: a named review pass; P = proxy: a lint catches part of it; the pass is still owed.
 
-## 1. One word, one meaning, one owner
+## 1. One word, one meaning, one owner (ubiquitous language)
 
 The vocabulary is a library; text names words by key; a retired word fails.
 
 - **1W** (Words, M): One glossary per product; one entry per concept: screen word, definition, the one name in code, routes, files and label keys, retired words. A new word enters the glossary first, after finding where it is already settled; disagreeing sources are raised, not picked. *Check: retired word in any layer fails.*
 - **1W2** (Words, P): No synonyms, no homonyms: two words for one thing, or one word for two, is split or merged, then swept. No personal names in prose, code, docs or file names; a record whose kind is a person holds the name as data. *Check: term count; denylist; read.*
-- **1D** (Data model, P): Look before you declare: search the model, glossary and shared core before adding a kind or field; record what was found; a new kind states what it could not have been. Shared concepts live in core; a field of one external system lives on its connector. *Check: create refuses without the recorded search.*
+- **1D** (Data model, P): Look before you declare: search the model, glossary and shared core before adding a kind or field; record what was found; a new kind states what it could not have been. Shared concepts live in core; a field of one external system lives on its connector. *(bounded context · YAGNI)* *Check: create refuses without the recorded search.*
 - **1S** (Screens, M): Every heading and label is a declared name; one name per thing and per role. *Check: undeclared label fails.*
 - **1P** (Pages and decks, P): Define before use: one entry per term, every use links to it. Internal vocabulary never reaches the reader: no ticket, decision or use-case ids, no code names, no design words in a story or definition. A sentence about something prevented or decided names who. *Check: anchors lint; word list; cold read.*
 
-## 2. Everything is a record of a declared kind
+## 2. Everything is a record of a declared kind (domain model)
 
 Kind name, definition, one line; stable ids; typed links. A page renders records and holds no content.
 
@@ -30,19 +31,19 @@ Kind name, definition, one line; stable ids; typed links. A page renders records
 - **2S2** (Screens, M): Every record reference on screen is a link to its one viewer; one record viewer per screen; a kind name opens the kind definition; every record has a stable deep link. *Check: browser check: a reference that is not a link fails; every deep link resolves.*
 - **2P** (Pages and decks, P): A document with data reads a data island; tables, counts and timelines are rendered, not typed. A deck reads the data. *Check: deck copy --check; review.*
 
-## 3. One fact, one owner
+## 3. One fact, one owner (DRY)
 
 Everything else links or is generated. A copy exists only where a check fails when it drifts.
 
 - **3D** (Data model, M): One data file or store is the source; everything else reads it. Generated artefacts are generated, never edited. *Check: malformed data refused; a copy fails --check on drift.*
 - **3D2** (Data model, P): A record carries no attribute another system owns; live state from elsewhere is read when needed, never copied onto the record. *Check: declaration review; a copied field with no owner here fails.*
 - **3C** (Code, P): No convenience duplicates: no shortcut endpoint, wrapper, hook or parallel path. *Check: dead-code and cycle scans; review.*
-- **3C2** (Code, M): The API is declared once as a contract; the docs page, client types, validation and route table are generated from it. A hand-written API doc is a copy. *Check: a route outside the contract fails; docs are a generated artefact.*
+- **3C2** (Code, M): The API is declared once as a contract; the docs page, client types, validation and route table are generated from it. A hand-written API doc is a copy. *(OpenAPI)* *Check: a route outside the contract fails; docs are a generated artefact.*
 - **3P** (Pages and decks, J): One fact, one owning doc; elsewhere links. No live state written into a doc: query and cite. A future-work list in a doc is a defect; work is a ticket. New docs need approval; superseded docs move to old/. *Check: review; could the system regenerate this?.*
-- **3X** (Process, P): Replace by expand, migrate, contract: add the new shape, move every reader and behaviour (scripts, playbooks, allowlists, notes), then remove. Done when the sweep for the old name is empty. *Check: retire refuses while readers remain.*
+- **3X** (Process, P): Replace by expand, migrate, contract: add the new shape, move every reader and behaviour (scripts, playbooks, allowlists, notes), then remove. Done when the sweep for the old name is empty. *(parallel change)* *Check: retire refuses while readers remain.*
 - **3X2** (Process, M): A project rule cites the standard rule it applies by id and adds only the project specifics; a restatement without a citation fails. *Check: citation check over the project rules.*
 
-## 4. Say what you have, not what exists
+## 4. Say what you have, not what exists (fail fast)
 
 Unknown is a value; counts are computed; nothing stands in for a missing fact.
 
@@ -53,7 +54,7 @@ Unknown is a value; counts are computed; nothing stands in for a missing fact.
 - **4X** (Process, J): A refusal without an address is a missing feature. *Check: review.*
 - **4X2** (Process, J): Probing production to see a guard fire is a write unless the call is refused; probe a disposable copy. *Check: review: what happens if the guard does not fire.*
 
-## 5. Labelled values, not prose
+## 5. Labelled values, not prose (plain language)
 
 The reader learns every word on the page, never in a conversation they were not in.
 
@@ -65,7 +66,7 @@ The reader learns every word on the page, never in a conversation they were not 
 - **5P2** (Pages and decks, J): The reader has only the page: every word learned here or earlier and restated; a pointer never replaces the thing. Numbers over state words; a number means one thing per page. A fresh-reader audit after any vocabulary or large change, recorded with its count, passes when the report is empty. *Check: cold read.*
 - **5P3** (Pages and decks, M): A document for a person is one self-contained HTML file: tokens, light and dark, no network. Every screen and page works at desktop and phone width with no sideways scroll. *Check: browser check.*
 
-## 6. Rules hold when a machine refuses, not when an agent remembers
+## 6. Rules hold when a machine refuses, not when an agent remembers (poka-yoke)
 
 A rule with no lint and no named pass is decoration.
 
@@ -80,13 +81,13 @@ A rule with no lint and no named pass is decoration.
 
 Code is cheap to rebuild; production data and the owner's attention are not.
 
-- **7P** (Pages and decks, J): Persistent docs are the now and the decisions in force; detail is one spec linked from its ticket. The decision log is append-only; a decision is superseded, never rewritten. *Check: review.*
+- **7P** (Pages and decks, J): Persistent docs are the now and the decisions in force; detail is one spec linked from its ticket. The decision log is append-only; a decision is superseded, never rewritten. *(ADR)* *Check: review.*
 - **7X** (Process, J): Build on a copy. Before production: words and kinds settled, and the owner has read the concept page (which kinds exist, what each is called, what each replaces) and used the working thing. The owner never reviews a design document. *Check: the go request carries the concept page.*
 - **7X2** (Process, J): Independent review before go: a reader or agent that did not build it checks against the Definition of Done and the cold read; the owner gets the concept page and the result. *Check: report attached to go.*
 - **7X3** (Process, P): Proposals, then review: proposed until the owner accepts. Mint before you cite. Date from the system clock. Snapshot before a structural edit; re-read a synced file before building on it; stage commits by path. *Check: status is a declared list; review.*
 - **7X4** (Process, M): A copy of production declares itself a copy on every screen and withholds every send, poll and outward call, showing what it would have sent. *Check: the copy refuses to start without the setting.*
 
-## 8. Access is granted, never assumed
+## 8. Access is granted, never assumed (least privilege)
 
 Only a person grants it; a caller gets the least it needs; a secret is made where it is used and never written down.
 
